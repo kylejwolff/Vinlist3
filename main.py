@@ -55,11 +55,23 @@ def print_table(arr: list, arr_title):
         print(line)
 
 
+def push_to_db(table, title, database):
+    collection = database[title]
+    headers = []
+    for header in table[0]:
+        headers.append(header)
+    for _i in range(1, len(table)):
+        document = {}
+        for _j in range(0, len(table[0])):
+            document[headers[_j]] = table[_i][_j]
+        collection.insert_one(document)
+
+
 my_client = pymongo.MongoClient("mongodb://localhost:27017/")
 my_db = my_client["mydatabase"]
 
-table = []
-title = ""
+global_table = []
+global_title = ""
 clear()
 run = True
 while run:
@@ -75,15 +87,21 @@ while run:
     if user_entry is "1":
         clear()
         path = input("Enter the path of the file: ")
-        title = path
-        table = read_csv(path)
+        title_index = path.rfind("\\")
+        if title_index == -1:
+            title_index = path.rfind("/")
+            if title_index == -1:
+                global_title = path.strip(".csv")
+            else:
+                global_title = path[title_index:].strip(".csv").strip("/")
+        else:
+            global_title = path[title_index:].strip(".csv").strip("\\")
+        global_table = read_csv(path)
     elif user_entry is "2":
         clear()
-        # for line in table:
-        #     print(line)
-        print_table(table, title)
+        print_table(global_table, global_title)
     elif user_entry is "3":
         clear()
-        print("This will push the table to MongoDB")
+        push_to_db(global_table, global_title, my_db)
     elif user_entry is "x":
         run = False
