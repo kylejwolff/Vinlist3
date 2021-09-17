@@ -55,8 +55,10 @@ def print_table(arr: list, arr_title):
         print(line)
 
 
-def push_to_db(table, title, database):
-    collection = database[title]
+def push_to_db(table, title, database="test"):
+    my_client = pymongo.MongoClient("mongodb://localhost:27017/")
+    my_db = my_client[database]
+    collection = my_db[title]
     headers = []
     for header in table[0]:
         headers.append(header)
@@ -66,9 +68,15 @@ def push_to_db(table, title, database):
             document[headers[_j]] = table[_i][_j]
         collection.insert_one(document)
 
+def append_row(table):
+    new_list = []
+    headers = []
+    for header in table[0]:
+        headers.append(header)
+    for header in headers:
+        new_list.append(input(f"Input a new value for: {header}"))
+    table.append(new_list)
 
-my_client = pymongo.MongoClient("mongodb://localhost:27017/")
-my_db = my_client["mydatabase"]
 
 global_table = []
 global_title = ""
@@ -80,6 +88,7 @@ while run:
     print("+ 1 - read csv              +")
     print("+ 2 - print current table   +")
     print("+ 3 - push table to MongoDB +")
+    print("+ 4 - add a row             +")
     print("+ x - exit the program      +")
     print("+++++++++++++++++++++++++++++")
     # print("Enter a menu option from the list: ")
@@ -102,6 +111,9 @@ while run:
         print_table(global_table, global_title)
     elif user_entry is "3":
         clear()
-        push_to_db(global_table, global_title, my_db)
+        push_to_db(global_table, global_title)
+    elif user_entry is "4":
+        clear()
+        append_row(global_table)
     elif user_entry is "x":
         run = False
